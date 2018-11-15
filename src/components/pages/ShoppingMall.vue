@@ -37,38 +37,90 @@
                 商品推荐
             </div>
             <div class="recommend-body">
-
+                <swiper :options="swiperOption">
+                    <swiper-slide v-for="(item,index) in recommendGoods" :key="index">
+                        <div class="recommend-item">
+                            <img :src="item.image" alt="" width="80%">
+                            <div>{{item.goodsName}}</div>
+                            <div>￥{{item.price | moneyFilter}}(￥{{item.mallPrice | moneyFilter}})</div>
+                        </div>
+                    </swiper-slide>
+                </swiper>
             </div>
         </div>
+        <floorComponent :floorData="floor1" :floorTitle="floorName.floor1"></floorComponent>
+        <floorComponent :floorData="floor2" :floorTitle="floorName.floor2"></floorComponent>
+        <floorComponent :floorData="floor3" :floorTitle="floorName.floor3"></floorComponent>
+        <!-- Hot-Area -->
+        <div class="hot-area">
+            <div class="hot title">热卖商品</div>
+            <div class="hot-goods">
+                <!-- 这里是list组件 -->
+                <van-list>
+                    <van-row gutter="20">
+                        <van-col span="12" v-for="(item,index) in hotGoods" :key="index">
+                            <goodsInfo :goodsImage="item.image" :goodsName="item.name" :goodsPrice="item.goodsPrice"></goodsInfo>
+                        </van-col>
+                    </van-row>
+                </van-list>
+            </div>
+        </div>
+        
     </div>
 </template>
 
 <script>
     import axios from 'axios';
+    import 'swiper/dist/css/swiper.css'
+    import {swiper , swiperSlide} from 'vue-awesome-swiper'
+    import floorComponent from '../component/floorComponent'
+    import goodsInfo from '../component/goodsInfoComponent'
+    import {toMoney} from '@/filter/moneyFilter'
+    import url from '@/serviceAPI.config.js'
     export default {
         data() {
             return {
+                swiperOption:{
+                    slidesPerView:3
+                },
                 locationIcon:require('../../assets/images/location.png'),
                 category:[],
                 adBanner:'',
-                bannerPicArray:[]
+                bannerPicArray:[],
+                recommendGoods:[],
+                floor1:[],
+                floor2:[],
+                floor3:[],
+                floorName:{},
+                hotGoods:[]
+            }
+        },
+        components:{swiper,swiperSlide,floorComponent,goodsInfo},
+        filters:{
+            moneyFilter:function(money){
+                return toMoney(money)
             }
         },
         created(){
             axios({
-                url:'https://www.easy-mock.com/mock/5bd01a0d2ccc8d60cfa7ee15/smilevue/',
+                url:url.getShopingMallInfo,
                 method:'get'
             })
             .then(response=>{
-                console.log(response)
                 if(response.status==200){
+                    console.log(response)
                     this.category=response.data.data.category;
                     this.adBanner=response.data.data.advertesPicture.PICTURE_ADDRESS;
                     this.bannerPicArray=response.data.data.slides;
+                    this.recommendGoods=response.data.data.recommend;
+                    this.floor1=response.data.data.floor1;
+                    this.floor2=response.data.data.floor2;
+                    this.floor3=response.data.data.floor3;
+                    this.floorName=response.data.data.floorName;
+                    this.hotGoods=response.data.data.hotGoods;
                 }
             })
             .catch(error=>{
-                console.log(error)
             })
         }
     }
@@ -98,12 +150,12 @@
   }
   .swiper-area{
       clear: both;
-      height: 10rem;
+      height: 9rem;
       overflow: hidden;
       position: relative;
   }
   .swiper-area .van-swipe{
-      height: 10rem;
+      height: 9rem;
       overflow: hidden;
       position: relative;
   }
@@ -126,7 +178,27 @@
   }
   .recommend-area{
       background: #fff;
-      margin-top:.3rem;
+      margin-top:.3rem;      
   }
-  
+  .recommend-body{
+      border:1px solid #ddd;
+  }
+  .recommend-title{
+      color: #e5017d;
+      font-size: 16px;
+      line-height: 2em;
+      padding:0 .5rem;
+  }
+  .recommend-item{
+      font-size: 12px;
+      border-right: 1px solid #ddd;
+      text-align: center
+  }
+  .hot-area{
+      text-align: center;
+      font-size: 14px;
+      height: 1.8rem;
+      line-height: 1.8rem;
+  }
+ 
 </style>
